@@ -1,2 +1,4 @@
-export * from './api.js';
-export * from './utils.js';
+export * from './api';
+export * from './utils';
+
+export type * from './types/shazam';
