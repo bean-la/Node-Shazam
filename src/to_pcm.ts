@@ -1,8 +1,8 @@
-import pkg from '@ffmpeg-installer/ffmpeg';
-const { path } = pkg;
+// import pkg from '@ffmpeg-installer/ffmpeg';
+// const { path } = pkg;
 import Ffmpeg from 'fluent-ffmpeg';
 
-Ffmpeg.setFfmpegPath(path);
+// Ffmpeg.setFfmpegPath(path);
 export async function convertfile(path: string) {
     return new Promise((resolve, reject) => {
         Ffmpeg(path)
@@ -13,7 +13,7 @@ export async function convertfile(path: string) {
             .duration(10)
             .output('node_shazam_temp.pcm')
             .on('end', () => {
-                try { 
+                try {
                     resolve(undefined);
                 } catch (error) {
                     reject(error);
@@ -29,7 +29,7 @@ export async function tomp3(path: string) {
         Ffmpeg(path)
             .output('node_shazam_temp.mp3')
             .on('end', () => {
-                try { 
+                try {
                     resolve(undefined);
                 } catch (error) {
                     reject(error);
