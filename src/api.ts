@@ -44,8 +44,16 @@ export class Endpoint {
 
 
     async sendRecognizeRequest(url: string, body: string, language: string = 'en'): Promise<ShazamRoot | null> {
-        //@ts-ignore
-        return await (await fetch(url, { body, headers: this.headers(language), method: 'POST' })).json();
+        const resp = await fetch(url, { body, headers: this.headers(language), method: 'POST' });
+        console.log('failed to shazam', resp.status);
+
+        try {
+            //@ts-ignore
+            return await resp.json();
+        } catch (e) {
+            console.log('Error parsing JSON', e, await resp.text());
+            return null;
+        }
     }
 
     async formatAndSendRecognizeRequest(signature: DecodedMessage, language: string = 'en'): Promise<ShazamRoot | null> {
