@@ -45,8 +45,6 @@ export class Endpoint {
 
     async sendRecognizeRequest(url: string, body: string, language: string = 'en'): Promise<ShazamRoot | null> {
         const resp = await fetch(url, { body, headers: this.headers(language), method: 'POST' });
-        console.log('failed to shazam', resp.status);
-
         try {
             //@ts-ignore
             return await resp.json();
