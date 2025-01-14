@@ -8,6 +8,9 @@
   "type": "module",
   "typings": "dist/api.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
+  "scripts": {
+    "build": "tsc"
+  },
   "exports": {
     ".": {
       "require": "./dist/cjs/api.cjs",
