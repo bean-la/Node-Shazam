@@ -11,7 +11,7 @@
   "exports": {
     ".": {
       "require": "./dist/cjs/api.cjs",
-      "import": "./src/index.ts"
+      "import": "./dist/esm/index.js"
     }
   },
   "repository": {

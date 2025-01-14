@@ -1,14 +1,14 @@
-import { SignatureGenerator } from './algorithm';
-import { DecodedMessage } from './signatures';
+import { SignatureGenerator } from './algorithm.js';
+import { DecodedMessage } from './signatures.js';
 import { recognizeBytes } from 'shazamio-core';
 import { default as fetch } from 'node-fetch';
-import { ShazamRoot } from './types/shazam';
-import { s16LEToSamplesArray } from './utils';
+import { ShazamRoot } from './types/shazam.js';
+import { s16LEToSamplesArray } from './utils.js';
 import fs from 'fs';
-import { Request, ShazamURLS } from './requests';
-import { convertfile, tomp3 } from './to_pcm';
+import { Request, ShazamURLS } from './requests.js';
+import { convertfile, tomp3 } from './to_pcm.js';
 
-export type { ShazamRoot } from './types/shazam';
+export type { ShazamRoot } from './types/shazam.js';
 
 const TIME_ZONE = 'Europe/Paris';
 
