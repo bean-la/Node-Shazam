@@ -9,7 +9,8 @@
   "typings": "dist/api.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "postinstall": "npm run build"
   },
   "exports": {
     ".": {
@@ -45,6 +46,5 @@
     "jsdoc": "^4.0.3",
     "jsdoc-baseline": "^0.1.5",
     "mocha": "^10.6.0"
-  },
-  "packageManager": "yarn@4.1.1"
+  }
 }
