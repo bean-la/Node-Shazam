@@ -9,8 +9,8 @@
   "typings": "dist/api.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "scripts": {
-    "build": "tsc",
-    "postinstall": "npm run build"
+    "build": "tsc -p .",
+    "postinstall": "pnpm run build"
   },
   "exports": {
     ".": {
