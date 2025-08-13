@@ -19,6 +19,10 @@
       "import": "./src/index.ts"
     }
   },
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "pnpm build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scaranaraa/Node-Shazam.git"
@@ -48,4 +52,5 @@
     "jsdoc-baseline": "^0.1.5",
     "mocha": "^10.6.0",
     "tsx": "^4.19.2"
+  }
 }
