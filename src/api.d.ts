@@ -1,7 +1,8 @@
 import { SignatureGenerator } from './algorithm.js';
 import { DecodedMessage } from './signatures.js';
 import { ShazamRoot } from './types/shazam.js';
-export type { ShazamRoot };
+export { ShazamRoot } from './types/shazam.js';
+
 export declare class Endpoint {
     timezone: string;
     static SCHEME: string;

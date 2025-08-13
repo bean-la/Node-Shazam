@@ -8,6 +8,11 @@
   "type": "module",
   "typings": "src/api.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
+  "scripts": {
+    "build": "tsc -p . && tsc -p tsconfig.cjs.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "postinstall": "pnpm run build"
+  },
   "exports": {
     ".": {
       "require": "./dist/cjs/api.cjs",
@@ -36,7 +41,7 @@
     "fluent-ffmpeg": "^2.1.3",
     "node-fetch": "^3.3.2",
     "shazamio-core": "^1.3.1",
-    "typescript": "5.5.3"
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.15.0",

@@ -7,6 +7,9 @@ import { s16LEToSamplesArray } from './utils.js';
 import fs from 'fs';
 import { Request, ShazamURLS } from './requests.js';
 import { convertfile, tomp3 } from './to_pcm.js';
+
+export type { ShazamRoot } from './types/shazam.js';
+
 const TIME_ZONE = 'Europe/Paris';
 
 function uuidv4() {
