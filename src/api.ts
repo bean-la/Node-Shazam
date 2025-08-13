@@ -208,7 +208,7 @@ export class Shazam {
         for (let i = Math.floor(signatures.length / 2); i < signatures.length; i += 4) {
             const signature = signatures[i];
             if (!signature) continue;
-            
+
             const data = {
                 'timezone': this.endpoint.timezone,
                 'signature': {

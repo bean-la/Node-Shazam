@@ -100,7 +100,11 @@ export class SignatureGenerator {
 
         // The premultiplication of the array is for applying a windowing function before the DFT (slighty rounded Hanning without zeros at edges)
 
-        const results = fft(excerptFromRingBuffer.map((v, i) => (new ComplexNumber(v * HANNING_MATRIX[i], 0))))
+        const results = fft(excerptFromRingBuffer.map((v, i) => {
+            const hanningValue = HANNING_MATRIX[i];
+            if (hanningValue === undefined) return new ComplexNumber(0, 0);
+            return new ComplexNumber(v * hanningValue, 0);
+        }))
             .map((e: ComplexNumber) => (e.imag * e.imag + e.real * e.real) / (1 << 17))
             .map((e: number) => e < 0.0000000001 ? 0.0000000001 : e).slice(0, 1025);
 
@@ -112,26 +116,38 @@ export class SignatureGenerator {
     }
 
     doPeakSpreading() {
-        const originLastFFT = this.fftOutputs.list[pyMod(this.fftOutputs.position - 1, this.fftOutputs.bufferSize)]!,
-            spreadLastFFT = new Float64Array(originLastFFT);
+        const originLastFFT = this.fftOutputs.list[pyMod(this.fftOutputs.position - 1, this.fftOutputs.bufferSize)];
+        if (!originLastFFT) return;
+
+        const spreadLastFFT = new Float64Array(originLastFFT);
         for (let position = 0; position < 1025; position++) {
             if (position < 1023) {
-                spreadLastFFT[position] = Math.max(...spreadLastFFT.slice(position, position + 3));
+                const slice = spreadLastFFT.slice(position, position + 3);
+                if (slice.length > 0) {
+                    spreadLastFFT[position] = Math.max(...Array.from(slice));
+                }
             }
 
-            let maxValue = spreadLastFFT[position];
+            let maxValue = spreadLastFFT[position] ?? 0;
             for (const formerFftNum of [-1, -3, -6]) {
-                const formerFftOutput = this.spreadFFTsOutput.list[pyMod(this.spreadFFTsOutput.position + formerFftNum, this.spreadFFTsOutput.bufferSize)]!;
-                if (isNaN(formerFftOutput[position])) continue;
-                formerFftOutput[position] = maxValue = Math.max(formerFftOutput[position], maxValue);
+                const formerFftOutput = this.spreadFFTsOutput.list[pyMod(this.spreadFFTsOutput.position + formerFftNum, this.spreadFFTsOutput.bufferSize)];
+                if (!formerFftOutput) continue;
+                if (position >= 0 && position < formerFftOutput.length) {
+                    const value = formerFftOutput[position];
+                    if (value === undefined || isNaN(value)) continue;
+                    const numValue = value as number;
+                    formerFftOutput[position] = maxValue = Math.max(numValue, maxValue);
+                }
             }
         }
         this.spreadFFTsOutput.append(spreadLastFFT);
     }
 
     doPeakRecognition() {
-        const fftMinus46 = this.fftOutputs.list[pyMod(this.fftOutputs.position - 46, this.fftOutputs.bufferSize)]!;
-        const fftMinus49 = this.spreadFFTsOutput.list[pyMod(this.spreadFFTsOutput.position - 49, this.spreadFFTsOutput.bufferSize)]!;
+        const fftMinus46 = this.fftOutputs.list[pyMod(this.fftOutputs.position - 46, this.fftOutputs.bufferSize)];
+        const fftMinus49 = this.spreadFFTsOutput.list[pyMod(this.spreadFFTsOutput.position - 49, this.spreadFFTsOutput.bufferSize)];
+
+        if (!fftMinus46 || !fftMinus49) return;
 
         const range = (a: number, b: number, c: number = 1) => {
             const out = [];
@@ -200,7 +216,7 @@ export class SignatureGenerator {
                             this.nextSignature.frequencyBandToSoundPeaks[FrequencyBand[band]] = [];
                         }
                         const frequencyBandKey = FrequencyBand[band];
-                        if (frequencyBandKey !== undefined) {
+                        if (frequencyBandKey !== undefined && this.nextSignature.frequencyBandToSoundPeaks[frequencyBandKey]) {
                             this.nextSignature.frequencyBandToSoundPeaks[frequencyBandKey].push(
                                 new FrequencyPeak(fftNumber, Math.round(peakMagnitude), Math.round(correctedPeakFrequencyBin), 16000)
                             );

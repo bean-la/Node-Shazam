@@ -16,7 +16,10 @@ const crc32 = function (str: number[]) {
     for (let i = 0; i < str.length; i++) {
         const char = str[i];
         if (char !== undefined) {
-            crc = (crc >>> 8) ^ crcTable[(crc ^ char) & 0xFF];
+            const crcTableValue = crcTable[(crc ^ char) & 0xFF];
+            if (crcTableValue !== undefined) {
+                crc = (crc >>> 8) ^ crcTableValue;
+            }
         }
     }
 
@@ -84,8 +87,11 @@ const readUint32 = (data: Uint8Array) => {
         d3
     );
 };
-const padTo32 = (data: Uint8Array) => new Uint8Array([...data, ...Array(4 - data.length).fill(0)]);
-const readInt32 = (data: Uint8Array) => new Int32Array(data)[0];
+const padTo32 = (data: Uint8Array) => new Uint8Array([...Array.from(data), ...Array(4 - data.length).fill(0)]);
+const readInt32 = (data: Uint8Array) => {
+    if (data.length === 0) return 0;
+    return new Int32Array(data)[0];
+};
 const writeUint32 = (e: number) => [e & 0xff, (e >> 8) & 0xff, (e >> 16) & 0xff, (e >> 24) & 0xff];
 const writeInt32 = (e: number) => {
     const q = new DataView(new ArrayBuffer(4), 0);
@@ -170,28 +176,41 @@ export class DecodedMessage {
 
             const frequencyBand = ((frequencyBandId ?? 0) - 0x60030040) as FrequencyBand;
             let fftPassNumber = 0;
-            self.frequencyBandToSoundPeaks[FrequencyBand[frequencyBand]] = [];
+            const frequencyBandKey = FrequencyBand[frequencyBand];
+            if (frequencyBandKey !== undefined) {
+                if (!self.frequencyBandToSoundPeaks[frequencyBandKey]) {
+                    self.frequencyBandToSoundPeaks[frequencyBandKey] = [];
+                }
+            }
 
-            while(true){
+            while (true) {
                 const rawFftPass = read(1);
-                if(rawFftPass.length === 0) break;
+                if (rawFftPass.length === 0) break;
 
                 const fftPassOffset = rawFftPass[0];
-                if(fftPassOffset === 0xff){
-                    fftPassNumber = readInt32(read(4));
+                if (fftPassOffset === 0xff) {
+                    const newFftPassNumber = readInt32(read(4));
+                    if (newFftPassNumber !== undefined) {
+                        fftPassNumber = newFftPassNumber;
+                    }
                     continue;
-                }else{
+                } else {
                     fftPassNumber += fftPassOffset ?? 0;
                 }
 
                 const peakMagnitude = readInt32(padTo32(read(2)));
                 const correctedPeakFrequencyBin = readInt32(padTo32(read(2)));
 
-                const frequencyBandKey = FrequencyBand[frequencyBand];
-                if(frequencyBandKey !== undefined) {
-                    self.frequencyBandToSoundPeaks[frequencyBandKey].push(
-                        new FrequencyPeak(fftPassNumber, peakMagnitude, correctedPeakFrequencyBin, self.sampleRateHz)
-                    );
+                if (peakMagnitude !== undefined && correctedPeakFrequencyBin !== undefined) {
+                    const frequencyBandKey = FrequencyBand[frequencyBand];
+                    if (frequencyBandKey !== undefined) {
+                        if (!self.frequencyBandToSoundPeaks[frequencyBandKey]) {
+                            self.frequencyBandToSoundPeaks[frequencyBandKey] = [];
+                        }
+                        self.frequencyBandToSoundPeaks[frequencyBandKey].push(
+                            new FrequencyPeak(fftPassNumber, peakMagnitude, correctedPeakFrequencyBin, self.sampleRateHz)
+                        );
+                    }
                 }
             }
         }
@@ -236,17 +255,17 @@ export class DecodedMessage {
 
                 if ((frequencyPeak.fftPassNumber - fftPassNumber) >= 0xff) {
                     peaksBuffer.push(0xff);
-                    peaksBuffer.push(...writeInt32(frequencyPeak.fftPassNumber));
+                    peaksBuffer.push(...Array.from(writeInt32(frequencyPeak.fftPassNumber)));
                     fftPassNumber = frequencyPeak.fftPassNumber;
                 }
 
                 peaksBuffer.push(frequencyPeak.fftPassNumber - fftPassNumber);
-                peaksBuffer.push(...writeInt16(frequencyPeak.peakMagnitude - 1));
-                peaksBuffer.push(...writeInt16(frequencyPeak.correctedPeakFrequencyBin - 1));
+                peaksBuffer.push(...Array.from(writeInt16(frequencyPeak.peakMagnitude - 1)));
+                peaksBuffer.push(...Array.from(writeInt16(frequencyPeak.correctedPeakFrequencyBin - 1)));
                 fftPassNumber = frequencyPeak.fftPassNumber;
             }
-            contentsBuf.push(...writeInt32(0x60030040 + frequencyBand));
-            contentsBuf.push(...writeInt32(peaksBuffer.length));
+            contentsBuf.push(...Array.from(writeInt32(0x60030040 + frequencyBand)));
+            contentsBuf.push(...Array.from(writeInt32(peaksBuffer.length)));
             contentsBuf = contentsBuf.concat(peaksBuffer);
             const paddingCount = 4 - (peaksBuffer.length % 4);
             if (paddingCount < 4) contentsBuf.push(...Array(paddingCount).fill(0));
@@ -255,13 +274,13 @@ export class DecodedMessage {
         header.sizeMinusHeader = contentsBuf.length + 8;
 
         let buf: number[] = [];
-        buf.push(...writeRawSignatureHeader(header));
-        buf.push(...writeInt32(0x40000000));
-        buf.push(...writeInt32(contentsBuf.length + 8));
+        buf.push(...Array.from(writeRawSignatureHeader(header)));
+        buf.push(...Array.from(writeInt32(0x40000000)));
+        buf.push(...Array.from(writeInt32(contentsBuf.length + 8)));
         buf = buf.concat(contentsBuf);
         header.crc32 = crc32(buf.slice(8));
         const newHeader = writeRawSignatureHeader(header);
-        buf.splice(0, newHeader.length, ...newHeader);
+        buf.splice(0, newHeader.length, ...Array.from(newHeader));
 
         return buf;
     }
