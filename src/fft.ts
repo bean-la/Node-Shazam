@@ -1,5 +1,5 @@
 export class ComplexNumber {
-    constructor(public real: number, public imag: number) {}
+    constructor(public real: number, public imag: number) { }
 
     static add(a: ComplexNumber, b: ComplexNumber): ComplexNumber {
         return new ComplexNumber(a.real + b.real, a.imag + b.imag);
@@ -36,12 +36,18 @@ export function fft(input: ComplexNumber[]): ComplexNumber[] {
 
     const result: ComplexNumber[] = [];
     for (let k = 0; k < N / 2; k++) {
-        const t = ComplexNumber.multiply(twiddleFactors[k], odd[k]);
-        const add = ComplexNumber.add(even[k], t);
-        const subtract = ComplexNumber.subtract(even[k], t);
+        const evenK = even[k];
+        const oddK = odd[k];
+        const twiddleK = twiddleFactors[k];
 
-        result[k] = add;
-        result[k + N / 2] = subtract;
+        if (evenK && oddK && twiddleK) {
+            const t = ComplexNumber.multiply(twiddleK, oddK);
+            const add = ComplexNumber.add(evenK, t);
+            const subtract = ComplexNumber.subtract(evenK, t);
+
+            result[k] = add;
+            result[k + N / 2] = subtract;
+        }
     }
 
     return result;

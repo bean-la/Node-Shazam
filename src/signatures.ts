@@ -1,25 +1,28 @@
 import { Buffer } from 'buffer';
 
-const crc32 = function(str: number[]) {
+const crc32 = function (str: number[]) {
     let c;
     const crcTable = [];
-    for(let n =0; n < 256; n++){
+    for (let n = 0; n < 256; n++) {
         c = n;
-        for(let k =0; k < 8; k++){
-            c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        for (let k = 0; k < 8; k++) {
+            c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
         }
         crcTable[n] = c;
     }
 
     let crc = 0 ^ (-1);
 
-    for (let i = 0; i < str.length; i++ ) {
-        crc = (crc >>> 8) ^ crcTable[(crc ^ str[i]) & 0xFF];
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        if (char !== undefined) {
+            crc = (crc >>> 8) ^ crcTable[(crc ^ char) & 0xFF];
+        }
     }
 
     return (crc ^ (-1)) >>> 0;
 };
-export enum FrequencyBand{
+export enum FrequencyBand {
     _0_250 = -1,
     _250_520 = 0,
     _520_1450 = 1,
@@ -27,7 +30,7 @@ export enum FrequencyBand{
     _3500_5500 = 3,
 }
 
-export enum SampleRate{
+export enum SampleRate {
     _8000 = 1,
     _11025 = 2,
     _16000 = 3,
@@ -38,23 +41,23 @@ export enum SampleRate{
 
 const DATA_URI_PREFIX = 'data:audio/vnd.shazam.sig;base64,';
 
-export class FrequencyPeak{
-    constructor(public fftPassNumber: number, public peakMagnitude: number, public correctedPeakFrequencyBin: number, public sampleRateHz: number){}
+export class FrequencyPeak {
+    constructor(public fftPassNumber: number, public peakMagnitude: number, public correctedPeakFrequencyBin: number, public sampleRateHz: number) { }
 
-    getFrequencyHz(){
+    getFrequencyHz() {
         return this.correctedPeakFrequencyBin * (this.sampleRateHz / 2 / 1024 / 64);
     }
 
-    getAmplitudePcm(){
+    getAmplitudePcm() {
         return Math.sqrt(Math.exp((this.peakMagnitude - 6144) / 1477.3) * (1 << 17) / 2) / 1024;
     }
 
-    getSeconds(){
+    getSeconds() {
         return (this.fftPassNumber * 128) / this.sampleRateHz;
     }
 }
 
-export interface RawSignatureHeader{
+export interface RawSignatureHeader {
     magic1: number;
     crc32: number;
     sizeMinusHeader: number;
@@ -65,28 +68,37 @@ export interface RawSignatureHeader{
 }
 
 const readUint32 = (data: Uint8Array) => {
+    const d0 = data[0];
+    const d1 = data[1];
+    const d2 = data[2];
+    const d3 = data[3];
+
+    if (d0 === undefined || d1 === undefined || d2 === undefined || d3 === undefined) {
+        return 0; // fallback value
+    }
+
     return (
-        data[0] >> 24 |
-        data[1] >> 16 |
-        data[2] >> 8 |
-        data[3]
+        d0 >> 24 |
+        d1 >> 16 |
+        d2 >> 8 |
+        d3
     );
 };
-const padTo32       = (data: Uint8Array) => new Uint8Array([...data, ...Array(4 - data.length).fill(0)]);
-const readInt32     = (data: Uint8Array) => new Int32Array(data)[0];
-const writeUint32   = (e: number) => [e & 0xff, (e >> 8) & 0xff, (e >> 16) & 0xff, (e >> 24) & 0xff];
-const writeInt32    = (e: number) => {
+const padTo32 = (data: Uint8Array) => new Uint8Array([...data, ...Array(4 - data.length).fill(0)]);
+const readInt32 = (data: Uint8Array) => new Int32Array(data)[0];
+const writeUint32 = (e: number) => [e & 0xff, (e >> 8) & 0xff, (e >> 16) & 0xff, (e >> 24) & 0xff];
+const writeInt32 = (e: number) => {
     const q = new DataView(new ArrayBuffer(4), 0);
     q.setInt32(0, e, true);
     return new Uint8Array(q.buffer);
 };
-const writeInt16    = (e: number) => {
+const writeInt16 = (e: number) => {
     const q = new DataView(new ArrayBuffer(2), 0);
     q.setInt16(0, e, true);
     return new Uint8Array(q.buffer);
 };
 
-export function readRawSignatureHeader(read: ((e?: number) => Uint8Array)){
+export function readRawSignatureHeader(read: ((e?: number) => Uint8Array)) {
     const _readUint32 = () => readUint32(read(4));
     const clear = (e: number) => Array(e).fill(0).map(readUint32);
     const
@@ -99,10 +111,10 @@ export function readRawSignatureHeader(read: ((e?: number) => Uint8Array)){
         _b = clear(2),
         numberSamplesPlusDividedSampleRate = _readUint32(),
         fixedValue = _readUint32();
-    return {magic1, crc32, sizeMinusHeader, magic2, shiftedSampleRateId, numberSamplesPlusDividedSampleRate, fixedValue};
+    return { magic1, crc32, sizeMinusHeader, magic2, shiftedSampleRateId, numberSamplesPlusDividedSampleRate, fixedValue };
 }
 
-export function writeRawSignatureHeader(rsh: RawSignatureHeader){
+export function writeRawSignatureHeader(rsh: RawSignatureHeader) {
     const buffer: number[] = [];
     const _writeUint32 = (e: number) => buffer.push(...writeUint32(e));
 
@@ -118,17 +130,17 @@ export function writeRawSignatureHeader(rsh: RawSignatureHeader){
     _writeUint32(0);
     _writeUint32(rsh.numberSamplesPlusDividedSampleRate);
     _writeUint32(rsh.fixedValue);
-    
+
     return new Uint8Array(buffer);
 }
 
-export class DecodedMessage{
+export class DecodedMessage {
     uri: boolean = false;
     sampleRateHz: number = 0;
     numberSamples: number = 0;
-    frequencyBandToSoundPeaks: {[key: string]: FrequencyPeak[]} = {};
+    frequencyBandToSoundPeaks: { [key: string]: FrequencyPeak[] } = {};
 
-    static decodeFromBinary(bytes: Uint8Array){
+    static decodeFromBinary(bytes: Uint8Array) {
         const self = new DecodedMessage();
 
         let ptr = 0;
@@ -140,23 +152,23 @@ export class DecodedMessage{
         seek(0);
         const header: RawSignatureHeader = readRawSignatureHeader(read);
 
-        if(header.magic1 != 0xcafe2580){
+        if (header.magic1 != 0xcafe2580) {
             console.log('ASSERT 3 FAIL');
         }
 
-        self.sampleRateHz = parseInt(SampleRate[header.shiftedSampleRateId >> 27].substring(1));
+        self.sampleRateHz = parseInt(SampleRate[header.shiftedSampleRateId >> 27]?.substring(1) ?? '16000');
         self.numberSamples = Math.round(header.numberSamplesPlusDividedSampleRate - self.sampleRateHz * 0.24);
 
-        while(true){
+        while (true) {
             const tlvHeader = read(8);
-            if(tlvHeader.length === 0) break;
+            if (tlvHeader.length === 0) break;
 
             const frequencyBandId = readInt32(tlvHeader.slice(0, 4)),
                 frequencyPeaksSize = readInt32(tlvHeader.slice(4));
-            const frequencyPeaksPadding = 4 + (-frequencyPeaksSize % 4);
+            const frequencyPeaksPadding = 4 + (-(frequencyPeaksSize ?? 0) % 4);
             read(frequencyPeaksPadding);
 
-            const frequencyBand = (frequencyBandId - 0x60030040) as FrequencyBand;
+            const frequencyBand = ((frequencyBandId ?? 0) - 0x60030040) as FrequencyBand;
             let fftPassNumber = 0;
             self.frequencyBandToSoundPeaks[FrequencyBand[frequencyBand]] = [];
 
@@ -169,29 +181,32 @@ export class DecodedMessage{
                     fftPassNumber = readInt32(read(4));
                     continue;
                 }else{
-                    fftPassNumber += fftPassOffset;
+                    fftPassNumber += fftPassOffset ?? 0;
                 }
 
                 const peakMagnitude = readInt32(padTo32(read(2)));
                 const correctedPeakFrequencyBin = readInt32(padTo32(read(2)));
 
-                self.frequencyBandToSoundPeaks[FrequencyBand[frequencyBand]].push(
-                    new FrequencyPeak(fftPassNumber, peakMagnitude, correctedPeakFrequencyBin, self.sampleRateHz)
-                );
+                const frequencyBandKey = FrequencyBand[frequencyBand];
+                if(frequencyBandKey !== undefined) {
+                    self.frequencyBandToSoundPeaks[frequencyBandKey].push(
+                        new FrequencyPeak(fftPassNumber, peakMagnitude, correctedPeakFrequencyBin, self.sampleRateHz)
+                    );
+                }
             }
         }
 
         return self;
     }
 
-    static decodeFromUri(uri: string){
-        if(!uri.startsWith(DATA_URI_PREFIX)){
+    static decodeFromUri(uri: string) {
+        if (!uri.startsWith(DATA_URI_PREFIX)) {
             throw new Error('assert 4');
         }
         return this.decodeFromBinary(Buffer.from(uri.replace(DATA_URI_PREFIX, ''), 'base64'));
     }
 
-    encodeToBinary(){
+    encodeToBinary() {
         const header: RawSignatureHeader = {
             magic1: 0xcafe2580,
             magic2: 0x94119c00,
@@ -202,10 +217,10 @@ export class DecodedMessage{
             crc32: -1,
             sizeMinusHeader: -1
         };
-        
+
         let contentsBuf: number[] = [];
-        
-        for(const x of Object.entries(this.frequencyBandToSoundPeaks).map(a => [FrequencyBand[a[0] as any] as unknown as number, a[1]]).sort((a, b) => ((a[0] as number) - (b[0] as number)))){
+
+        for (const x of Object.entries(this.frequencyBandToSoundPeaks).map(a => [FrequencyBand[a[0] as any] as unknown as number, a[1]]).sort((a, b) => ((a[0] as number) - (b[0] as number)))) {
             const
                 frequencyBand = x[0] as number,
                 frequencyPeaks = x[1] as FrequencyPeak[];
@@ -214,12 +229,12 @@ export class DecodedMessage{
 
             let fftPassNumber = 0;
 
-            for(const frequencyPeak of frequencyPeaks){
-                if(frequencyPeak.fftPassNumber < fftPassNumber){
+            for (const frequencyPeak of frequencyPeaks) {
+                if (frequencyPeak.fftPassNumber < fftPassNumber) {
                     throw new Error('Assert 5');
                 }
 
-                if((frequencyPeak.fftPassNumber - fftPassNumber) >= 0xff){
+                if ((frequencyPeak.fftPassNumber - fftPassNumber) >= 0xff) {
                     peaksBuffer.push(0xff);
                     peaksBuffer.push(...writeInt32(frequencyPeak.fftPassNumber));
                     fftPassNumber = frequencyPeak.fftPassNumber;
@@ -234,7 +249,7 @@ export class DecodedMessage{
             contentsBuf.push(...writeInt32(peaksBuffer.length));
             contentsBuf = contentsBuf.concat(peaksBuffer);
             const paddingCount = 4 - (peaksBuffer.length % 4);
-            if(paddingCount < 4) contentsBuf.push(...Array(paddingCount).fill(0));
+            if (paddingCount < 4) contentsBuf.push(...Array(paddingCount).fill(0));
         }
 
         header.sizeMinusHeader = contentsBuf.length + 8;
@@ -250,8 +265,8 @@ export class DecodedMessage{
 
         return buf;
     }
-    
-    encodeToUri(){
+
+    encodeToUri() {
         const bin = this.encodeToBinary();
         return DATA_URI_PREFIX + Buffer.from(bin).toString('base64');
     }

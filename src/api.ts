@@ -2,7 +2,7 @@ import { SignatureGenerator } from './algorithm.js';
 import { DecodedMessage } from './signatures.js';
 import { recognizeBytes } from 'shazamio-core';
 import { default as fetch } from 'node-fetch';
-import { ShazamRoot } from './types/shazam.js';
+import type { ShazamRoot } from './types/shazam.js';
 import { s16LEToSamplesArray } from './utils.js';
 import fs from 'fs';
 import { Request, ShazamURLS } from './requests.js';
@@ -206,11 +206,14 @@ export class Shazam {
         let response;
 
         for (let i = Math.floor(signatures.length / 2); i < signatures.length; i += 4) {
+            const signature = signatures[i];
+            if (!signature) continue;
+            
             const data = {
                 'timezone': this.endpoint.timezone,
                 'signature': {
-                    'uri': signatures[i].uri,
-                    'samplems': signatures[i].samplems
+                    'uri': signature.uri,
+                    'samplems': signature.samplems
                 },
                 'timestamp': new Date().getTime(),
                 'context': {},
