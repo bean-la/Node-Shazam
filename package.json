@@ -19,10 +19,6 @@
       "import": "./src/index.ts"
     }
   },
-  "scripts": {
-    "build": "tsc",
-    "postinstall": "pnpm build"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scaranaraa/Node-Shazam.git"
