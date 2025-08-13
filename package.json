@@ -3,10 +3,10 @@
   "version": "1.2.7",
   "description": "Node API for Shazam",
   "main": "dist/cjs/api.cjs",
-  "module": "dist/esm/index.js",
+  "module": "src/index.ts",
   "license": "GPL-2.0",
   "type": "module",
-  "typings": "dist/api.d.ts",
+  "typings": "src/api.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "scripts": {
     "build": "tsc -p . && tsc -p tsconfig.cjs.json",
@@ -16,7 +16,7 @@
   "exports": {
     ".": {
       "require": "./dist/cjs/api.cjs",
-      "import": "./dist/esm/index.js"
+      "import": "./src/index.ts"
     }
   },
   "repository": {
@@ -46,6 +46,6 @@
     "eslint-plugin-mocha": "^10.4.3",
     "jsdoc": "^4.0.3",
     "jsdoc-baseline": "^0.1.5",
-    "mocha": "^10.6.0"
-  }
+    "mocha": "^10.6.0",
+    "tsx": "^4.19.2"
 }
