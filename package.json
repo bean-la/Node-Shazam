@@ -9,8 +9,8 @@
   "typings": "src/api.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "scripts": {
-    "build": "tsc -p . && tsc -p tsconfig.cjs.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.cjs.json",
+    "build:cjs": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.cjs.json",
     "postinstall": "pnpm run build"
   },
   "exports": {
