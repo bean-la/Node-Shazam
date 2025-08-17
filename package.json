@@ -6,7 +6,7 @@
   "module": "dist/esm/index.js",
   "license": "GPL-2.0",
   "type": "module",
-  "typings": "dist/api.d.ts",
+  "types": "dist/esm/index.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "exports": {
     ".": {
