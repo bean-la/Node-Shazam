@@ -11,10 +11,6 @@
   "exports": {
     ".": "./dist/esm/index.js"
   },
-  "scripts": {
-    "build": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam",
-    "postinstall": "pnpm run build"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scaranaraa/Node-Shazam.git"
