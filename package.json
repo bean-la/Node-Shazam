@@ -2,17 +2,14 @@
   "name": "node-shazam",
   "version": "1.2.7",
   "description": "Node API for Shazam",
-  "main": "dist/cjs/api.cjs",
+  "main": "dist/esm/api.js",
   "module": "dist/esm/index.js",
   "license": "GPL-2.0",
   "type": "module",
   "types": "dist/esm/index.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "exports": {
-    ".": {
-      "require": "./dist/cjs/api.cjs",
-      "import": "./dist/esm/index.js"
-    }
+    ".": "./dist/esm/index.js"
   },
   "scripts": {
     "build": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam",
