@@ -4,12 +4,22 @@
   "description": "Node API for Shazam",
   "main": "dist/esm/api.js",
   "module": "dist/esm/index.js",
+  "require": "dist/cjs/index.cjs",
   "license": "GPL-2.0",
   "type": "module",
   "types": "dist/esm/index.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "exports": {
-    ".": "./dist/esm/index.js"
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.json && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.cjs.json && cd _packages/Node-Shazam && node rename-cjs.cjs",
+    "build:esm": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.json",
+    "build:cjs": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.cjs.json && cd _packages/Node-Shazam && node rename-cjs.cjs"
   },
   "repository": {
     "type": "git",
@@ -27,11 +37,12 @@
     "@types/fluent-ffmpeg": "^2.1.24",
     "buffer": "^6.0.3",
     "fluent-ffmpeg": "^2.1.3",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "shazamio-core": "^1.3.1",
     "typescript": "5.5.3"
   },
   "devDependencies": {
+    "@types/node-fetch": "2",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
     "eslint": "^9.6.0",
