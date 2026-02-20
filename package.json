@@ -17,9 +17,9 @@
     }
   },
   "scripts": {
-    "build": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.json && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.cjs.json && cd _packages/Node-Shazam && node rename-cjs.cjs",
-    "build:esm": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.json",
-    "build:cjs": "cd ../.. && pnpm exec tsc -p _packages/Node-Shazam/tsconfig.cjs.json && cd _packages/Node-Shazam && node rename-cjs.cjs"
+    "build": "pnpm exec tsc -p tsconfig.json && pnpm exec tsc -p tsconfig.cjs.json && node rename-cjs.cjs",
+    "build:esm": "pnpm exec tsc -p tsconfig.json",
+    "build:cjs": "pnpm exec tsc -p tsconfig.cjs.json && node rename-cjs.cjs"
   },
   "repository": {
     "type": "git",
