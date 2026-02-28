@@ -9,8 +9,9 @@
   "typings": "dist/esm/index.d.ts",
   "homepage": "https://scaranaraa.github.io/Node-Shazam/",
   "scripts": {
-    "build": "pnpm exec tsc -p tsconfig.cjs.json",
+    "build": "pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "pnpm exec tsc -p tsconfig.cjs.json",
+    "build:esm": "pnpm exec tsc -p tsconfig.json",
     "postinstall": "pnpm run build"
   },
   "exports": {
