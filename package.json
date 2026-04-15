@@ -11,8 +11,7 @@
   "scripts": {
     "build": "pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "pnpm exec tsc -p tsconfig.cjs.json && node scripts/rename-cjs.cjs",
-    "build:esm": "pnpm exec tsc -p tsconfig.json",
-    "postinstall": "pnpm run build"
+    "build:esm": "pnpm exec tsc -p tsconfig.json"
   },
   "exports": {
     ".": {
