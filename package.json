@@ -18,6 +18,11 @@
       "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/api.cjs"
+    },
+    "./api": {
+      "types": "./dist/esm/api.d.ts",
+      "import": "./dist/esm/api.js",
+      "require": "./dist/cjs/api.cjs"
     }
   },
   "repository": {
