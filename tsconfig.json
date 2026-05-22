@@ -6,7 +6,7 @@
     "esModuleInterop": true,   
     "declaration": true,                            
     "forceConsistentCasingInFileNames": true,            
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "strict": true,                   
     "inlineSourceMap": false,               
     "skipLibCheck": true ,
